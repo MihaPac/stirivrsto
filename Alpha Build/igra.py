@@ -64,12 +64,12 @@ class Igra():
         (self.polje, self.na_potezi) = self.zgodovina.pop()
 
     def veljavne_poteze(self):
-        """Vrni seznam veljavnih potez."""
-        poteze = []
+        """Vrni seznam veljavnih potez, v smislu kateri stolpci so prosti."""
+        poteze = {}
         for i in range(7):
             for j in range(6):
                 if self.polje[i][j] is PRAZNO:
-                    poteze.append((i,j))
+                    poteze[i] = PRAZNO
         return poteze
 
     def povleci_potezo(self, i, j):
@@ -88,20 +88,19 @@ class Igra():
         if (stolpec) or (self.na_potezi == None):
             # neveljavna poteza
             print("neveljavna poteza")
-            return None
+            return self.stanje_igre()
         else:
-            self.shrani_pozicijo()
-            print(i, j)
             self.polje[i][j] = self.na_potezi
-            (zmagovalec, trojka) = self.stanje_igre()
+            zmagovalec, trojka = self.stanje_igre()
+            self.shrani_pozicijo()
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
-                print("menjal sem potezo")
                 self.na_potezi = nasprotnik(self.na_potezi)
+                print("menjal sem potezo")
             else:
                 # Igre je konec
                 self.na_potezi = None
-            return (zmagovalec, trojka)
+            return
 
     # Tabela vseh trojk, ki nastopajo v igralnem polju
     trojke = []
@@ -142,8 +141,8 @@ class Igra():
            - (NEODLOCENO, None), če je igre konec in je neodločeno
            - (NI_KONEC, None), če igre še ni konec
         """
-        for t in Igra.trojke:
-            ((i1,j1),(i2,j2),(i3,j3),(i4,j4)) = t
+        for t in self.trojke:
+            [(i1,j1),(i2,j2),(i3,j3),(i4,j4)] = t
             p = self.polje[i1][j1]
             if p != PRAZNO and p == self.polje[i2][j2] == self.polje[i3][j3] == self.polje[i4][j4]:
                 # Našli smo zmagovalno trojko

@@ -10,7 +10,6 @@ class Gui():
 
     VELIKOST_POLJA = 50
 
-
     def __init__(self, master):
         self.igralec_m = None # Objekt, ki igra X (nastavimo ob začetku igre)
         self.igralec_r = None # Objekt, ki igra O (nastavimo ob začetku igre)
@@ -66,16 +65,12 @@ class Gui():
         #Naredi novo prazno matriko, ki bo predstavljala igralno polje.
         self.igra.nova_igra()
 
-                        
-        
-    def koncaj_igro(self):
-        self.napis.set("Igre je konec!")
-
     def zapri_okno(self, master):
         self.prekini_igralce()
         master.destroy()
 
     def narisi_mrezo(self):
+        '''Igralno polje.'''
         self.canvas.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
         sirina = 2
@@ -83,38 +78,36 @@ class Gui():
             self.canvas.create_line(i*d, 0*d, i*d, 6*d, width = sirina, tag=Gui.TAG_OKVIR)
             self.canvas.create_line(0*d, i*d, 7*d, i*d, width = sirina, tag=Gui.TAG_OKVIR)
 
-    def narisi_R(self, stolpec):
-        """Nariši rdec krožec v polje (i, j)."""
+    def narisi_barvo(self, stolpec):
+        '''Nariše krožec igralčeve barve.'''
         x = stolpec * Gui.VELIKOST_POLJA # STOLPEC
-        y = self.pravo_polje(stolpec, "R") * Gui.VELIKOST_POLJA # VRSTICA
-        sirina = 1
+        y = self.pravo_polje(stolpec) * Gui.VELIKOST_POLJA # VRSTICA
         d1 = 5
         d2 = Gui.VELIKOST_POLJA - d1
-        self.canvas.create_oval(x+d1, y+d1, x+d2, y+d2, fill="#a55",tag=Gui.TAG_FIGURA)
-        self.igra.povleci_potezo(stolpec, self.pravo_polje(stolpec, "R"))
-        self.napis.set("Na potezi je modri.")
-        self.igra.polje[stolpec][self.pravo_polje(stolpec, "R")] = 1
+        if self.igra.na_potezi == IGRALEC_R:
+            barva = "#a55"
+            igralec = "rdeči"
+        elif self.igra.na_potezi == IGRALEC_M:
+            barva = "#55a"
+            igralec = "modri"
+        else:
+            print("Ni igralca!")
+            return
+        self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
+        self.igra.povleci_potezo(stolpec, self.pravo_polje(stolpec))
+        self.napis.set("Na potezi je {}.".format(igralec))
 
-    def narisi_M(self, stolpec):
-        """Nariši moder krožec v polje (i, j)."""
-        x = stolpec * Gui.VELIKOST_POLJA # STOLPEC
-        y = self.pravo_polje(stolpec, "M") * Gui.VELIKOST_POLJA # VRSTICA
-        sirina = 5
-        d1 = 5
-        d2 = Gui.VELIKOST_POLJA - d1
-        self.canvas.create_oval(x+d1, y+d1, x+d2, y+d2, fill="#55a",tag=Gui.TAG_FIGURA)
-        self.igra.povleci_potezo(stolpec, self.pravo_polje(stolpec, "R"))
-        self.napis.set("Na potezi je rdeči.")
-        self.igra.polje[stolpec][self.pravo_polje(stolpec, "M")] = -1
-            
     def canvas_klik(self, event):
         stolpec = event.x // Gui.VELIKOST_POLJA
         vrstica = event.y // Gui.VELIKOST_POLJA
         print("Pozicija je" , stolpec, vrstica, "igralec je",
               self.igra.na_potezi)
-        self.povleci_potezo((vrstica,stolpec))
+        #zmaga = self.povleci_potezo((vrstica,stolpec))
+        #print("Zmaga je {}".format(zmaga))
+        self.povleci_potezo((vrstica, stolpec))
+        self.konec(self.igra.stanje_igre())
 
-    def pravo_polje(self, stolpec, barva):
+    def pravo_polje(self, stolpec):
         for izbira_vrste in range(5, -1, -1):
                 if self.igra.polje[stolpec][izbira_vrste] == 0:
                     return izbira_vrste
@@ -122,19 +115,31 @@ class Gui():
                     continue
 
     def povleci_potezo(self, p):
-        (vrstica, stolpec) = p
+        vrstica, stolpec = p
         igralec = self.igra.na_potezi
-        print(self.igra.polje)
-        if igralec == IGRALEC_R:
-            #Izbere pravilno polje, da vanj narise krog
-            self.narisi_R(stolpec)
-        elif igralec == IGRALEC_M:
-            #Izbere pravilno polje, da vanj narise krog
-            self.narisi_M(stolpec)
-        else:
-            self.napis.set("Igre je konec.")
+        if self.pravo_polje(stolpec) == None:
+            print("Stolpec je poln!")
+            return
+        self.narisi_barvo(stolpec)
+        return
 
-            
+
+    def konec(self, pogoji):
+        '''Ali je konec igre?'''
+        zmaga, trojka = pogoji
+        if zmaga == NI_KONEC or zmaga == None:
+            return
+        self.igra.na_potezi = None
+        zmagovalec = ""
+        if zmaga == 1:
+            zmagovalec = "rdeč"
+            self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
+        elif zmaga == -1:
+            zmagovalec = "moder"
+            self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
+        else:
+            self.napis.set("Igre je konec. Nobeden ni zmagal!")
+
 if __name__ == "__main__":
     # Naredimo glavno okno in nastavimo ime
     root = tkinter.Tk()
