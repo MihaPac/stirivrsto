@@ -75,7 +75,7 @@ class Igra():
     def povleci_potezo(self, i, j):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
-        #NEVEM ČE SPODNJO SPLOH POTREBNO
+        #NE VEM, ČE JE SPODNJE SPLOH POTREBNO
         #i -= 1
         #j -= 1
         stolpec = False

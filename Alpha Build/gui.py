@@ -1,7 +1,5 @@
 from igra import *
 from clovek import *
-from racunalnik import *
-from minimax import *
 import tkinter
 
 class Gui():
@@ -48,8 +46,8 @@ class Gui():
     def zacni_igro(self):
         self.prekini_igralce()
         # Nastavimo igralce
-        self.igralec_m = Racunalnik(self,Minimax(3))
-        self.igralec_r = Racunalnik(self,Minimax(3))
+        self.igralec_m = Clovek(self)
+        self.igralec_r = Clovek(self)
         # Pobrišemo vse figure s polja
         self.canvas.delete(Gui.TAG_FIGURA)
         # Ustvarimo novo igro
