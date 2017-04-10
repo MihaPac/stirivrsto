@@ -26,8 +26,6 @@ class Gui():
         #Menu za igro
         menu_igra = tkinter.Menu(menu)
         menu.add_cascade(label = "Igra", menu = menu_igra)
-        menu_igra.add_command(label = "Nova igra",
-                              command = self.zacni_igro)
         #Menu za izbiro igralcev
         menu_igra.add_command(label="R=Človek, M=Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
@@ -97,7 +95,7 @@ class Gui():
     def narisi_barvo(self, stolpec):
         '''Nariše krožec igralčeve barve.'''
         x = stolpec * Gui.VELIKOST_POLJA # STOLPEC
-        y = self.pravo_polje(stolpec) * Gui.VELIKOST_POLJA # VRSTICA
+        y = Gui.VELIKOST_POLJA * (5 - self.pravo_polje(stolpec)) # VRSTICA
         d1 = 5
         d2 = Gui.VELIKOST_POLJA - d1
         if self.igra.na_potezi == IGRALEC_R:
@@ -117,7 +115,7 @@ class Gui():
         for p in trojka:
             stolpec, vrstica = p
             x = stolpec * Gui.VELIKOST_POLJA # STOLPEC
-            y = vrstica * Gui.VELIKOST_POLJA # VRSTICA
+            y = (5 - vrstica) * Gui.VELIKOST_POLJA # VRSTICA
             d1 = 5
             d2 = Gui.VELIKOST_POLJA - d1
             self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
@@ -133,7 +131,7 @@ class Gui():
         self.konec(self.igra.stanje_igre())
 
     def pravo_polje(self, stolpec):
-        for izbira_vrste in range(5, -1, -1):
+        for izbira_vrste in range(6):
                 if self.igra.polje[stolpec][izbira_vrste] == 0:
                     return izbira_vrste
                 else:
