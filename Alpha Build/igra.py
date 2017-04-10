@@ -65,11 +65,12 @@ class Igra():
 
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez, v smislu kateri stolpci so prosti."""
-        poteze = {}
+        poteze = []
         for i in range(7):
             for j in range(6):
                 if self.polje[i][j] is PRAZNO:
-                    poteze[i] = PRAZNO
+                    poteze += [(i, j)]
+                    break
         return poteze
 
     def povleci_potezo(self, i, j):
@@ -96,6 +97,7 @@ class Igra():
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 self.na_potezi = nasprotnik(self.na_potezi)
+                print(self.polje)
                 print("menjal sem potezo")
             else:
                 # Igre je konec

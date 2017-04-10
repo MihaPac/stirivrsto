@@ -1,6 +1,9 @@
 from igra import *
 from clovek import *
+from racunalnik import *
 import tkinter
+
+globina = 3
 
 class Gui():
 
@@ -10,7 +13,7 @@ class Gui():
 
     VELIKOST_POLJA = 50
 
-    def __init__(self, master):
+    def __init__(self, master, globina):
         self.igralec_m = None # Objekt, ki igra X (nastavimo ob začetku igre)
         self.igralec_r = None # Objekt, ki igra O (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
@@ -20,13 +23,24 @@ class Gui():
 
         menu = tkinter.Menu(master)
         master.config(menu = menu)
-
+        #Menu za igro
         menu_igra = tkinter.Menu(menu)
         menu.add_cascade(label = "Igra", menu = menu_igra)
         menu_igra.add_command(label = "Nova igra",
                               command = self.zacni_igro)
-
-
+        #Menu za izbiro igralcev
+        menu_igra.add_command(label="R=Človek, M=Človek",
+                              command=lambda: self.zacni_igro(Clovek(self),
+                                                              Clovek(self)))
+        menu_igra.add_command(label="R=Človek, M=Računalnik",
+                              command=lambda: self.zacni_igro(Clovek(self),
+                                                              Racunalnik(self, Minimax(globina))))
+        menu_igra.add_command(label="R=Računalnik, M=Človek",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                                                              Clovek(self)))
+        menu_igra.add_command(label="R=Računalnik, M=Računalnik",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                                                              Racunalnik(self, Minimax(globina))))
 
         self.napis = tkinter.StringVar(master, value="Dobrodošli v 4 v vrsto!")
         tkinter.Label(master, textvariable=self.napis).grid(row=0, column=0)
@@ -41,15 +55,17 @@ class Gui():
         self.canvas.bind("<Button-1>", self.canvas_klik)
 
         #Zacetek Igre
-        self.zacni_igro()
+        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(globina)))
 
-    def zacni_igro(self):
+    def zacni_igro(self, igralec_r, igralec_m):
         self.prekini_igralce()
         # Nastavimo igralce
         self.igralec_m = Clovek(self)
         self.igralec_r = Clovek(self)
         # Pobrišemo vse figure s polja
         self.canvas.delete(Gui.TAG_FIGURA)
+        self.igralec_r = igralec_r
+        self.igralec_m = igralec_m
         # Ustvarimo novo igro
         self.igra = Igra()
         # Rdeči je prvi na potezi
@@ -86,10 +102,10 @@ class Gui():
         d2 = Gui.VELIKOST_POLJA - d1
         if self.igra.na_potezi == IGRALEC_R:
             barva = "#a55"
-            igralec = "rdeči"
+            igralec = "modri"
         elif self.igra.na_potezi == IGRALEC_M:
             barva = "#55a"
-            igralec = "modri"
+            igralec = "rdeči"
         else:
             print("Ni igralca!")
             return
@@ -160,7 +176,7 @@ if __name__ == "__main__":
     # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
-    aplikacija = Gui(root)
+    aplikacija = Gui(root, globina)
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.

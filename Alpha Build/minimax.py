@@ -2,7 +2,6 @@ import logging
 
 from igra import IGRALEC_M, IGRALEC_R, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
-
 ######################################################################
 ## Algoritem minimax
 
@@ -40,7 +39,7 @@ class Minimax:
             self.poteza = poteza
 
     # Vrednosti igre
-    ZMAGA = 10000000 # Mora biti vsaj 10^5
+    ZMAGA = 10000000 # Mora biti vsaj 10^7
     NESKONCNO = ZMAGA + 1 # Več kot zmaga
 
     def vrednost_pozicije(self):
@@ -63,10 +62,10 @@ class Minimax:
         for t in self.igra.trojke:
             x = 0
             y = 0
-            for (i,j) in t:
-                if self.igra.polje[i][j] == self.jaz:
+            for (j,i) in t:
+                if self.igra.polje[j][i] == self.jaz:
                     x += 1
-                elif self.igra.polje[i][j] == nasprotnik(self.jaz):
+                elif self.igra.polje[j][i] == nasprotnik(self.jaz):
                     y += 1
             vrednost += vrednost_trojke.get((x,y), 0)
         return vrednost
@@ -96,26 +95,28 @@ class Minimax:
                     # Maksimiziramo
                     najboljsa_poteza = None
                     vrednost_najboljse = -Minimax.NESKONCNO
-                    for p in self.igra.veljavne_poteze():
+                    print(self.igra.veljavne_poteze())
+                    for i, j in self.igra.veljavne_poteze():
+                        
                         #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEČTI POTEZO!!!!#######
-                        self.igra.pravo_polje
-                        self.igra.povleci_potezo(p)
+                        self.igra.povleci_potezo(i, j)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[1]
                         self.igra.razveljavi()
                         if vrednost > vrednost_najboljse:
                             vrednost_najboljse = vrednost
-                            najboljsa_poteza = p
+                            najboljsa_poteza = (i, j)
                 else:
                     # Minimiziramo
                     najboljsa_poteza = None
                     vrednost_najboljse = Minimax.NESKONCNO
-                    for p in self.igra.veljavne_poteze():
-                        self.igra.povleci_potezo(p)
+                    print(self.igra.veljavne_poteze())
+                    for i, j in self.igra.veljavne_poteze():
+                        self.igra.povleci_potezo(i, j)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[1]
                         self.igra.razveljavi()
                         if vrednost < vrednost_najboljse:
                             vrednost_najboljse = vrednost
-                            najboljsa_poteza = p
+                            najboljsa_poteza = (i, j)
 
                 assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
                 return (najboljsa_poteza, vrednost_najboljse)
