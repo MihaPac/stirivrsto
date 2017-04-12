@@ -95,11 +95,11 @@ class Minimax:
                     # Maksimiziramo
                     najboljsa_poteza = None
                     vrednost_najboljse = -Minimax.NESKONCNO
-                    print(self.igra.veljavne_poteze())
+                    #print(self.igra.veljavne_poteze())
                     for i, j in self.igra.veljavne_poteze():
                         
                         #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEČTI POTEZO!!!!#######
-                        self.igra.povleci_potezo(i, j)
+                        self.igra.povleci_potezo(i)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[1]
                         self.igra.razveljavi()
                         if vrednost > vrednost_najboljse:
@@ -109,9 +109,9 @@ class Minimax:
                     # Minimiziramo
                     najboljsa_poteza = None
                     vrednost_najboljse = Minimax.NESKONCNO
-                    print(self.igra.veljavne_poteze())
+                    #print(self.igra.veljavne_poteze())
                     for i, j in self.igra.veljavne_poteze():
-                        self.igra.povleci_potezo(i, j)
+                        self.igra.povleci_potezo(i)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[1]
                         self.igra.razveljavi()
                         if vrednost < vrednost_najboljse:
