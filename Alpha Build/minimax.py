@@ -104,7 +104,7 @@ class Minimax:
                         self.igra.razveljavi()
                         if vrednost > vrednost_najboljse:
                             vrednost_najboljse = vrednost
-                            najboljsa_poteza = (i, j)
+                            najboljsa_poteza = (j, i)
                 else:
                     # Minimiziramo
                     najboljsa_poteza = None
@@ -116,7 +116,7 @@ class Minimax:
                         self.igra.razveljavi()
                         if vrednost < vrednost_najboljse:
                             vrednost_najboljse = vrednost
-                            najboljsa_poteza = (i, j)
+                            najboljsa_poteza = (j, i)
 
                 assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
                 return (najboljsa_poteza, vrednost_najboljse)

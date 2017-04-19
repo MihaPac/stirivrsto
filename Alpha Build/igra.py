@@ -37,7 +37,7 @@ class Igra():
                       [0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0]]
         self.na_potezi = IGRALEC_R
-        self.zgodovina = [(self.polje[:], IGRALEC_M)]
+        self.zgodovina = []
 
     #def nova_igra(self):
 
@@ -45,7 +45,8 @@ class Igra():
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
            z metodo razveljavi."""
         p = [self.polje[i][:] for i in range(7)]
-        self.zgodovina.append((p, self.na_potezi))
+        self.zgodovina += [(p, self.na_potezi)]
+        #print("tole",self.zgodovina, "to je zgodovina")
 
     def kopija(self):
         """Vrni kopijo te igre, brez zgodovine."""
@@ -61,15 +62,17 @@ class Igra():
 
     def razveljavi(self):
         """Razveljavi potezo in se vrni v prejšnje stanje."""
+        if len(self.zgodovina) == 0:
+            return "Polje je prazno"
         (self.polje, self.na_potezi) = self.zgodovina.pop()
-        print(self.polje, " je polje")
+        #print(self.polje, " je polje")
         return self.polje
         
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez, v smislu kateri stolpci so prosti."""
         poteze = []
         for i in range(7):
-            for j in range(0, 6):
+            for j in range(6):
                 if self.polje[i][j] is PRAZNO:
                     poteze += [(i, j)]
                     break
@@ -78,15 +81,7 @@ class Igra():
     def povleci_potezo(self, stolp):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
-        #NE VEM, ČE JE SPODNJE SPLOH POTREBNO
-        #i -= 1
-        #j -= 1
         stolpec = False
-        vrstica = 0
-        for j in range(VRSTICE):
-            if self.polje[stolp][j] is not PRAZNO:
-                vrstica = j
-                break
         #preveri če je stolpec prazen
         for vrstica in range(6):
             if self.polje[stolp][vrstica] == PRAZNO:
@@ -98,10 +93,9 @@ class Igra():
             print("neveljavna poteza")
             return self.stanje_igre()
         else:
-
+            self.shrani_pozicijo()
             self.polje[stolp][vrstica] = self.na_potezi
             zmagovalec, trojka = self.stanje_igre()
-            self.shrani_pozicijo()
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 self.na_potezi = nasprotnik(self.na_potezi)

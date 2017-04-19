@@ -2,6 +2,8 @@ from igra import *
 from clovek import *
 from racunalnik import *
 import tkinter
+import argparse
+import logging
 
 globina = 1
 
@@ -42,10 +44,11 @@ class Gui():
         
 
         self.napis = tkinter.StringVar(master, value="Dobrodošli v 4 v vrsto!")
-        tkinter.Label(master, textvariable=self.napis).grid(row=0, column=1)
+        #Ta napis se dejansko ne pokaže
+        tkinter.Label(master, textvariable=self.napis).grid(row=0, column=0)
         
         self.canvas = tkinter.Canvas(master, width=7*Gui.VELIKOST_POLJA, height=6*Gui.VELIKOST_POLJA)
-        self.canvas.grid(row = 1, column = 1)
+        self.canvas.grid(row = 1, column = 0)
 
         self.b = tkinter.Button(master, text="Razveljavi", command = self.razveljavi)
         self.b.grid(row=2, column =0)
@@ -63,9 +66,6 @@ class Gui():
 
     def zacni_igro(self, igralec_r, igralec_m):
         self.prekini_igralce()
-        # Nastavimo igralce
-        self.igralec_m = Clovek(self)
-        self.igralec_r = Clovek(self)
         # Pobrišemo vse figure s polja
         self.canvas.delete(Gui.TAG_FIGURA)
         self.igralec_r = igralec_r
@@ -137,13 +137,13 @@ class Gui():
             self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
                 
     def canvas_klik(self, event):
-        print(event.x, event.y)
+        #print(event.x, event.y)
         stolpec = event.x // Gui.VELIKOST_POLJA
         vrstica = event.y // Gui.VELIKOST_POLJA
         if event.x > Gui.VELIKOST_POLJA * 7:
             stolpec = 6
-        print("Pozicija je" , stolpec, vrstica, "igralec je",
-              self.igra.na_potezi)
+        #print("Pozicija je" , stolpec, vrstica, "igralec je",
+        #      self.igra.na_potezi)
         #zmaga = self.povleci_potezo((vrstica,stolpec))
         #print("Zmaga je {}".format(zmaga))
         self.povleci_potezo((vrstica, stolpec))
@@ -151,6 +151,7 @@ class Gui():
 
     def pravo_polje(self, stolpec):
         for izbira_vrste in range(6):
+                #print("Stolpec je ", stolpec, " Vrstica je ", izbira_vrste)
                 if self.igra.polje[stolpec][izbira_vrste] == 0:
                     return izbira_vrste
                 else:
@@ -187,16 +188,44 @@ class Gui():
     def razveljavi(self):
         self.canvas.delete(Gui.TAG_FIGURA)
         polje = self.igra.razveljavi()
-        print("Polje za razveljavo ", polje)
-        for stolpec in range(6):
-            for vrstica in range(5):
+        if type(polje) != list:
+            return
+        #print("Polje za razveljavo ", polje)
+        for stolpec in range(7):
+            for vrstica in range(6):
                 if polje[stolpec][vrstica] == 1:
                     self.narisi_barvo(stolpec, vrstica, False, 1)
                 elif polje[stolpec][vrstica] == -1:
                     self.narisi_barvo(stolpec, vrstica, False, -1)
-        print("Narisalo se je")
+        if self.igra.na_potezi == 1:
+            self.napis.set("Na potezi je rdeči.")
+        elif self.igra.na_potezi == -1:
+            self.napis.set("Na potezi je modri.")
+        #print("Narisalo se je")
 
 if __name__ == "__main__":
+    # Iz ukazne vrstice poberemo globino za minimax, uporabimo
+    # modul argparse, glej https://docs.python.org/3.4/library/argparse.html
+
+    # Opišemo argumente, ki jih sprejmemo iz ukazne vrstice
+    parser = argparse.ArgumentParser(description="Igrica štiri v vrsto")
+    # Argument --globina n, s privzeto vrednostjo MINIMAX_GLOBINA
+    parser.add_argument('--globina',
+                        default=globina,
+                        type=int,
+                        help='globina iskanja za minimax algoritem')
+    # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='vklopi sporočila o dogajanju')
+
+    # Obdelamo argumente iz ukazne vrstice
+    args = parser.parse_args()
+
+    # Vklopimo sporočila, če je uporabnik podal --debug
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     # Naredimo glavno okno in nastavimo ime
     root = tkinter.Tk()
     root.title("Štiri v vrsto")
