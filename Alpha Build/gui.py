@@ -5,7 +5,7 @@ import tkinter
 import argparse
 import logging
 
-globina = 1
+globina = 4
 
 class Gui():
 
@@ -98,33 +98,17 @@ class Gui():
         for i in range(7):
             self.canvas.create_line(0*d + 2, i*d + 2, 7*d + 2, i*d + 2, width = sirina, tag=Gui.TAG_OKVIR)
 
-    def narisi_barvo(self, stolpec, vrstica, igranje = True, igralec = None):
-        '''Nariše krožec igralčeve barve.'''
+    def narisi_barvo(self, stolpec, vrstica, igralec):
         x = stolpec * Gui.VELIKOST_POLJA + 2# STOLPEC
         y = Gui.VELIKOST_POLJA * (5 - vrstica) + 2 # VRSTICA
         d1 = Gui.VELIKOST_POLJA // 10
         d2 = Gui.VELIKOST_POLJA - d1
-        if igranje:
-            if self.igra.na_potezi== IGRALEC_R:
-                barva = "#a55"
-                igralec = "modri"
-            elif self.igra.na_potezi == IGRALEC_M:
-                barva = "#55a"
-                igralec = "rdeči"
-            else:
-                print("Ni igralca!")
-                return
-            self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
-            self.igra.povleci_potezo(stolpec)
-            self.napis.set("Na potezi je {}.".format(igralec))
-        else:
-            if igralec == IGRALEC_R:
-                barva = "#a55"
-                igralec = "modri"
-            elif igralec == IGRALEC_M:
-                barva = "#55a"
-                igralec = "rdeči"
-            self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
+        barva = ""
+        if igralec == IGRALEC_M:
+            barva = "#55a"
+        elif igralec == IGRALEC_R:
+            barva = "#a55"
+        self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
 
 
     def narisi_zmago(self, barva, trojka):
@@ -147,7 +131,7 @@ class Gui():
         #zmaga = self.povleci_potezo((vrstica,stolpec))
         #print("Zmaga je {}".format(zmaga))
         self.povleci_potezo((vrstica, stolpec))
-        self.konec(self.igra.stanje_igre())
+        
 
     def pravo_polje(self, stolpec):
         for izbira_vrste in range(6):
@@ -163,7 +147,21 @@ class Gui():
             print("Stolpec je poln!")
             return
         vrstica = self.pravo_polje(stolpec)
-        self.narisi_barvo(stolpec, vrstica)
+        print("Igralec je ", self.igra.na_potezi)
+        self.narisi_barvo(stolpec, vrstica, self.igra.na_potezi)
+        self.igra.povleci_potezo(stolpec)
+        igralec = ""
+        if self.igra.na_potezi == IGRALEC_R:
+            igralec = "rdeči"
+            self.napis.set("Na potezi je {}.".format(igralec))
+            self.igralec_r.igraj()
+        elif self.igra.na_potezi == IGRALEC_M:
+            igralec = "modri"
+            self.napis.set("Na potezi je {}.".format(igralec))
+            self.igralec_m.igraj()
+        else:
+            self.konec(self.igra.stanje_igre())
+        
         #return
 
 
@@ -193,13 +191,13 @@ class Gui():
         #print("Polje za razveljavo ", polje)
         for stolpec in range(7):
             for vrstica in range(6):
-                if polje[stolpec][vrstica] == 1:
-                    self.narisi_barvo(stolpec, vrstica, False, 1)
-                elif polje[stolpec][vrstica] == -1:
-                    self.narisi_barvo(stolpec, vrstica, False, -1)
-        if self.igra.na_potezi == 1:
+                if polje[stolpec][vrstica] == IGRALEC_R:
+                    self.narisi_barvo(stolpec, vrstica, IGRALEC_R)
+                elif polje[stolpec][vrstica] == IGRALEC_M:
+                    self.narisi_barvo(stolpec, vrstica, IGRALEC_M)
+        if self.igra.na_potezi == IGRALEC_R:
             self.napis.set("Na potezi je rdeči.")
-        elif self.igra.na_potezi == -1:
+        elif self.igra.na_potezi == IGRALEC_M:
             self.napis.set("Na potezi je modri.")
         #print("Narisalo se je")
 

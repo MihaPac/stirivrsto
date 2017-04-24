@@ -1,9 +1,14 @@
 import logging
+import random
 
 from igra import IGRALEC_M, IGRALEC_R, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
 ######################################################################
 ## Algoritem minimax
+
+            # Vrednosti igre
+ZMAGA = 10000000 # Mora biti vsaj 10^7
+NESKONCNO = ZMAGA + 1 # Več kot zmaga
 
 class Minimax:
     # Algoritem minimax predstavimo z objektom, ki hrani stanje igre in
@@ -16,6 +21,7 @@ class Minimax:
         self.igra = None # objekt, ki opisuje igro (ga dobimo kasneje)
         self.jaz = None  # katerega igralca igramo (podatek dobimo kasneje)
         self.poteza = None # sem napišemo potezo, ko jo najdemo
+
 
     def prekini(self):
         """Metoda, ki jo pokliče GUI, če je treba nehati razmišljati, ker
@@ -38,9 +44,7 @@ class Minimax:
             logging.debug("minimax: poteza {0}, vrednost {1}".format(poteza, vrednost))
             self.poteza = poteza
 
-    # Vrednosti igre
-    ZMAGA = 10000000 # Mora biti vsaj 10^7
-    NESKONCNO = ZMAGA + 1 # Več kot zmaga
+
 
     def vrednost_pozicije(self):
         """Ocena vrednosti pozicije: sešteje vrednosti vseh trojk na plošči."""
@@ -49,14 +53,14 @@ class Minimax:
         # potem je taka trojka za self.jaz vredna v.
         # Trojke, ki se ne pojavljajo v slovarju, so vredne 0.
         vrednost_trojke = {
-            (4,0) : Minimax.ZMAGA,
-            (0,4) : -Minimax.ZMAGA//10,
-            (3,0) : Minimax.ZMAGA//100,
-            (0,3) : -Minimax.ZMAGA//1000,
-            (2,0) : Minimax.ZMAGA//10000,
-            (0,2) : -Minimax.ZMAGA//100000,
-            (1,0) : Minimax.ZMAGA//1000000,
-            (0,1) : -Minimax.ZMAGA//10000000
+            (4,0) : ZMAGA,
+            (0,4) : -ZMAGA//10,
+            (3,0) : ZMAGA//100,
+            (0,3) : -ZMAGA//1000,
+            (2,0) : ZMAGA//10000,
+            (0,2) : -ZMAGA//100000,
+            (1,0) : ZMAGA//1000000,
+            (0,1) : -ZMAGA//10000000
         }
         vrednost = 0
         for t in self.igra.trojke:
@@ -70,7 +74,7 @@ class Minimax:
             vrednost += vrednost_trojke.get((x,y), 0)
         return vrednost
 
-    def minimax(self, globina, maksimiziramo):
+    def minimax(self, globina, maksimiziramo, alfa = -NESKONCNO, beta = NESKONCNO):
         """Glavna metoda minimax."""
         if self.prekinitev:
             # Sporočili so nam, da moramo prekiniti
@@ -80,9 +84,9 @@ class Minimax:
         if zmagovalec in (IGRALEC_M, IGRALEC_R, NEODLOCENO):
             # Igre je konec, vrnemo njeno vrednost
             if zmagovalec == self.jaz:
-                return (None, Minimax.ZMAGA)
+                return (None, ZMAGA)
             elif zmagovalec == nasprotnik(self.jaz):
-                return (None, -Minimax.ZMAGA)
+                return (None, -ZMAGA)
             else:
                 return (None, 0)
         elif zmagovalec == NI_KONEC:
@@ -94,31 +98,36 @@ class Minimax:
                 if maksimiziramo:
                     # Maksimiziramo
                     najboljsa_poteza = None
-                    vrednost_najboljse = -Minimax.NESKONCNO
+                    vrednost = -NESKONCNO
                     #print(self.igra.veljavne_poteze())
-                    for i, j in self.igra.veljavne_poteze():
+                    for i, j in self.igra.veljavne_poteze()[::random.choice([1,-1])]:
                         
                         #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEČTI POTEZO!!!!#######
                         self.igra.povleci_potezo(i)
-                        vrednost = self.minimax(globina-1, not maksimiziramo)[1]
-                        self.igra.razveljavi()
-                        if vrednost > vrednost_najboljse:
-                            vrednost_najboljse = vrednost
+                        if vrednost < self.minimax(globina-1, not maksimiziramo, alfa, beta)[1]:
                             najboljsa_poteza = (j, i)
+                            vrednost = self.minimax(globina-1, not maksimiziramo, alfa, beta)[1]
+                        self.igra.razveljavi()
+                        alfa = max(alfa, vrednost)
+                        if beta <= alfa:
+                            break
+
                 else:
                     # Minimiziramo
                     najboljsa_poteza = None
-                    vrednost_najboljse = Minimax.NESKONCNO
+                    vrednost = NESKONCNO
                     #print(self.igra.veljavne_poteze())
-                    for i, j in self.igra.veljavne_poteze():
+                    for i, j in self.igra.veljavne_poteze()[::random.choice([1,-1])]:
                         self.igra.povleci_potezo(i)
-                        vrednost = self.minimax(globina-1, not maksimiziramo)[1]
-                        self.igra.razveljavi()
-                        if vrednost < vrednost_najboljse:
-                            vrednost_najboljse = vrednost
+                        if vrednost > self.minimax(globina-1, maksimiziramo, alfa, beta)[1]:
                             najboljsa_poteza = (j, i)
+                            vrednost = self.minimax(globina-1, maksimiziramo, alfa, beta)[1]
+                        self.igra.razveljavi()
+                        beta = min(beta, vrednost)
+                        if beta <= alfa:
+                            break
 
                 assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
-                return (najboljsa_poteza, vrednost_najboljse)
+                return (najboljsa_poteza, vrednost)
         else:
             assert False, "minimax: nedefinirano stanje igre"
