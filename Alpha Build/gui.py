@@ -1,11 +1,11 @@
 from igra import *
 from clovek import *
 from racunalnik import *
+import minimax
+
 import tkinter
 import argparse
 import logging
-
-globina = 4
 
 class Gui():
 
@@ -19,7 +19,7 @@ class Gui():
         self.igralec_m = None # Objekt, ki igra X (nastavimo ob začetku igre)
         self.igralec_r = None # Objekt, ki igra O (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
-        
+
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
 
 
@@ -34,19 +34,19 @@ class Gui():
                                                               Clovek(self)))
         menu_igra.add_command(label="R=Človek, M=Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Minimax(globina))))
+                                                              Racunalnik(self, Minimax())))
         menu_igra.add_command(label="R=Računalnik, M=Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax()),
                                                               Clovek(self)))
         menu_igra.add_command(label="R=Računalnik, M=Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
-                                                              Racunalnik(self, Minimax(globina))))
-        
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax()),
+                                                              Racunalnik(self, Minimax())))
+
 
         self.napis = tkinter.StringVar(master, value="Dobrodošli v 4 v vrsto!")
         #Ta napis se dejansko ne pokaže
         tkinter.Label(master, textvariable=self.napis).grid(row=0, column=0)
-        
+
         self.canvas = tkinter.Canvas(master, width=7*Gui.VELIKOST_POLJA, height=6*Gui.VELIKOST_POLJA)
         self.canvas.grid(row = 1, column = 0)
 
@@ -59,7 +59,7 @@ class Gui():
         self.canvas.bind("<Button-1>", self.canvas_klik)
 
         #Zacetek Igre
-        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(globina)))
+        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax()))
 
 
 
@@ -119,34 +119,29 @@ class Gui():
             d1 = 5
             d2 = Gui.VELIKOST_POLJA - d1
             self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
-                
+
     def canvas_klik(self, event):
         #print(event.x, event.y)
         stolpec = event.x // Gui.VELIKOST_POLJA
-        vrstica = event.y // Gui.VELIKOST_POLJA
         if event.x > Gui.VELIKOST_POLJA * 7:
             stolpec = 6
         #print("Pozicija je" , stolpec, vrstica, "igralec je",
         #      self.igra.na_potezi)
         #zmaga = self.povleci_potezo((vrstica,stolpec))
         #print("Zmaga je {}".format(zmaga))
-        self.povleci_potezo((vrstica, stolpec))
-        
+        if self.igra.na_potezi == IGRALEC_M:
+            self.igralec_m.klik(stolpec)
+        elif self.igra.na_potezi == IGRALEC_R:
+            self.igralec_r.klik(stolpec)
+        else:
+            # Nihče ni na potezi, user pa klika
+            pass
 
-    def pravo_polje(self, stolpec):
-        for izbira_vrste in range(6):
-                #print("Stolpec je ", stolpec, " Vrstica je ", izbira_vrste)
-                if self.igra.polje[stolpec][izbira_vrste] == 0:
-                    return izbira_vrste
-                else:
-                    continue
-
-    def povleci_potezo(self, p):
-        vrstica, stolpec = p
-        if self.pravo_polje(stolpec) == None:
+    def povleci_potezo(self, stolpec):
+        vrstica = self.igra.prava_vrstica(stolpec)
+        if vrstica == None:
             print("Stolpec je poln!")
-            return
-        vrstica = self.pravo_polje(stolpec)
+            return None
         print("Igralec je ", self.igra.na_potezi)
         self.narisi_barvo(stolpec, vrstica, self.igra.na_potezi)
         self.igra.povleci_potezo(stolpec)
@@ -161,7 +156,7 @@ class Gui():
             self.igralec_m.igraj()
         else:
             self.konec(self.igra.stanje_igre())
-        
+
         #return
 
 
@@ -172,11 +167,11 @@ class Gui():
             return
         self.igra.na_potezi = None
         zmagovalec = ""
-        if zmaga == 1:
+        if zmaga == IGRALEC_R:
             zmagovalec = "rdeč"
             self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
             self.narisi_zmago('red', trojka)
-        elif zmaga == -1:
+        elif zmaga == IGRALEC_M:
             zmagovalec = "moder"
             self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
             self.narisi_zmago('blue', trojka)
@@ -209,7 +204,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Igrica štiri v vrsto")
     # Argument --globina n, s privzeto vrednostjo MINIMAX_GLOBINA
     parser.add_argument('--globina',
-                        default=globina,
+                        default=minimax.max_globina,
                         type=int,
                         help='globina iskanja za minimax algoritem')
     # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
@@ -231,8 +226,8 @@ if __name__ == "__main__":
     # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
-    aplikacija = Gui(root, globina)
+    aplikacija = Gui(root, minimax.max_globina)
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
-    root.mainloop()        
+    root.mainloop()

@@ -35,10 +35,10 @@ class Racunalnik():
 
     def preveri_potezo(self):
         """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
-        print("Preverjamo")
+        #print("Preverjamo")
         if self.algoritem.poteza is not None:
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
-            print("Računalnikova poteza je ",self.algoritem.poteza) 
+            print("Računalnikova poteza je {0}, vredna {1}".format(self.algoritem.poteza, self.algoritem.vrednost))
             self.gui.povleci_potezo(self.algoritem.poteza)
             print("Na potezi je ",self.gui.igra.na_potezi)
             # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
