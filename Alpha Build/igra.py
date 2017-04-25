@@ -1,9 +1,9 @@
 ######################################################################
 ## Igra
 
-IGRALEC_M = -1
-IGRALEC_R = 1
-PRAZNO = 0
+IGRALEC_M = 'M'
+IGRALEC_R = 'R'
+PRAZNO = '_'
 NEODLOCENO = "neodločeno"
 NI_KONEC = "ni konec"
 VRSTICE = 6
@@ -29,13 +29,13 @@ def nasprotnik(igralec):
 
 class Igra():
     def __init__(self):
-        self.polje = [[0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0]]
+        self.polje = [[PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO],
+                      [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO]]
         self.na_potezi = IGRALEC_R
         self.zgodovina = []
 
@@ -67,31 +67,25 @@ class Igra():
         (self.polje, self.na_potezi) = self.zgodovina.pop()
         #print(self.polje, " je polje")
         return self.polje
-        
+
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez, v smislu kateri stolpci so prosti."""
-        poteze = []
-        for i in range(7):
-            for j in range(6):
-                if self.polje[i][j] is PRAZNO:
-                    poteze += [(i, j)]
-                    break
-        return poteze
+        return [stolp for stolp in range(7) if self.polje[stolp][5] is PRAZNO]
+
+    def prava_vrstica(self, stolpec):
+        for vrstica in range(6):
+            if self.polje[stolpec][vrstica] == PRAZNO:
+                return vrstica
+        return None
 
     def povleci_potezo(self, stolp):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
-        stolpec = False
-        #preveri če je stolpec prazen
-        for vrstica in range(6):
-            if self.polje[stolp][vrstica] == PRAZNO:
-                stolpec = False
-                break
-            stolpec = True
-        if (stolpec) or (self.na_potezi == None):
+        vrstica = self.prava_vrstica(stolp)
+        if (vrstica == None) or (self.na_potezi == None):
             # neveljavna poteza
             print("neveljavna poteza")
-            return self.stanje_igre()
+            return None
         else:
             self.shrani_pozicijo()
             self.polje[stolp][vrstica] = self.na_potezi
@@ -100,11 +94,11 @@ class Igra():
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 self.na_potezi = nasprotnik(self.na_potezi)
                 #print(self.polje)
-                print("menjal sem potezo")
+                # print("menjal sem potezo")
             else:
                 # Igre je konec
                 self.na_potezi = None
-            return
+            return (zmagovalec, trojka)
 
     # Tabela vseh trojk, ki nastopajo v igralnem polju
     trojke = []
@@ -134,10 +128,10 @@ class Igra():
                 trojke.append(
                             [(stolp, vrst), (stolp + 1, vrst + 1),
                              (stolp + 2, vrst + 2), (stolp + 3, vrst + 3)])
-            
+
     #print(trojke)
     #print(len(trojke))
-        
+
     def stanje_igre(self):
         """Ugotovi, kakšno je trenutno stanje igre. Vrne:
            - (IGRALEC_R, trojka), če je igre konec in je zmagal IGRALEC_R z dano zmagovalno trojko
@@ -152,10 +146,9 @@ class Igra():
                 # Našli smo zmagovalno trojko
                 return (p, [t[0], t[1], t[2], t[3]])
         # Ni zmagovalca, ali je igre konec?
-        for i in range(7):
-            for j in range(6):
-                if self.polje[i][j] is PRAZNO:
-                    # Našli smo prazno plosca, igre ni konec
-                    return (NI_KONEC, None)
+        for stolp in range(7):
+            if self.polje[stolp][5] is PRAZNO:
+                # Našli smo prazno plosca, igre ni konec
+                return (NI_KONEC, None)
         # Vsa polja so polna, rezultat je neodločen
         return (NEODLOCENO, None)
