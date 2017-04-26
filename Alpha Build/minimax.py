@@ -2,13 +2,13 @@ import logging
 import random
 from igra import IGRALEC_M, IGRALEC_R, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
-max_globina = 6
+max_globina = 5
 
 ######################################################################
 ## Algoritem minimax
 
             # Vrednosti igre
-ZMAGA = 10000000 # Mora biti vsaj 10^7
+ZMAGA = 1000000000 # Mora biti vsaj 10^9
 NESKONCNO = ZMAGA + 1 # Več kot zmaga
 
 def pomembnost(i):
@@ -57,22 +57,25 @@ class Minimax:
 
     def vrednost_pozicije(self):
         """Ocena vrednosti pozicije: sešteje vrednosti vseh trojk na plošči."""
-        # Slovar, ki pove, koliko so vredne posamezne trojke, kjer "(x,y) : v" pomeni:
+        # Slovar, ki pove, koliko so vredne posamezne trojke, kjer "((x,y),p) : v" pomeni:
         # če imamo v trojki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
         # potem je taka trojka za self.jaz vredna v.
         # Trojke, ki se ne pojavljajo v slovarju, so vredne 0.
         vrednost_trojke = {
-            (4,0) : ZMAGA,
-            (0,4) : -ZMAGA//10,
-            (3,0) : ZMAGA//100,
-            (0,3) : -ZMAGA//1000,
-            (2,0) : ZMAGA//10000,
-            (0,2) : -ZMAGA//100000,
-            (1,0) : ZMAGA//1000000,
-            (0,1) : -ZMAGA//10000000
+            #(4,0) : ZMAGA,
+            #(0,4) : -ZMAGA//2,
+            (3,0) : ZMAGA//1000,
+            (0,3) : -ZMAGA//2000,
+            (2,0) : ZMAGA//100000,
+            (0,2) : -ZMAGA//200000,
+            (1,0) : ZMAGA//10000000,
+            (0,1) : -ZMAGA//20000000
         }
         vrednost = 0
         for t in self.igra.trojke:
+            pomembnost = 100
+            for polje in t:
+                pomembnost = min(pomembnost, polje[1])
             x = 0
             y = 0
             for (stolp, vrst) in t:
@@ -82,8 +85,8 @@ class Minimax:
                     y += 1
                 else:
                     assert (self.igra.polje[stolp][vrst] == PRAZNO)
-            vrednost += vrednost_trojke.get((x,y), 0)
-        return vrednost
+            vrednost += vrednost_trojke.get((x,y), 0) - pomembnost * 10
+        return vrednost + self.igra.stevilo_potez
 
     def minimax(self, globina, maksimiziramo, alfa = -NESKONCNO, beta = NESKONCNO):
         """Glavna metoda minimax."""
@@ -92,12 +95,14 @@ class Minimax:
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
             return (None, 0)
         (zmagovalec, lst) = self.igra.stanje_igre()
+        if self.igra.polje[3][0] == PRAZNO:
+            return (3, 0)
         if zmagovalec in (IGRALEC_M, IGRALEC_R, NEODLOCENO):
             # Igre je konec, vrnemo njeno vrednost
             if zmagovalec == self.jaz:
-                return (None, ZMAGA)
+                return (None, ZMAGA - self.igra.stevilo_potez)
             elif zmagovalec == nasprotnik(self.jaz):
-                return (None, -ZMAGA)
+                return (None, -ZMAGA + self.igra.stevilo_potez)
             else:
                 return (None, 0)
         elif zmagovalec == NI_KONEC:
@@ -119,7 +124,7 @@ class Minimax:
                         #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEČTI POTEZO!!!!#######
                         self.igra.povleci_potezo(i)
                         v = self.minimax(globina-1, not maksimiziramo, alfa, beta)[1]
-                        if (vrednost < v) or (vrednost == v and random.random() < 0.5):
+                        if (vrednost < v) or (vrednost == v and random.random() < 0.2):
                             najboljsa_poteza = i
                             vrednost = v
                         self.igra.razveljavi()
@@ -135,7 +140,7 @@ class Minimax:
                     for i in sorted(self.igra.veljavne_poteze(), key=pomembnost):
                         self.igra.povleci_potezo(i)
                         v = self.minimax(globina-1, not maksimiziramo, alfa, beta)[1]
-                        if (vrednost > v) or (vrednost == v and random.random() < 0.5):
+                        if (vrednost > v) or (vrednost == v and random.random() < 0.2):
                             najboljsa_poteza = i
                             vrednost = v
                         self.igra.razveljavi()
@@ -147,3 +152,4 @@ class Minimax:
                 return (najboljsa_poteza, vrednost)
         else:
             assert False, "minimax: nedefinirano stanje igre"
+

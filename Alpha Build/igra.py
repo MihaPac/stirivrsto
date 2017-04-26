@@ -1,3 +1,4 @@
+
 ######################################################################
 ## Igra
 
@@ -38,6 +39,7 @@ class Igra():
                       [PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO, PRAZNO]]
         self.na_potezi = IGRALEC_R
         self.zgodovina = []
+        self.stevilo_potez = 0
 
     #def nova_igra(self):
 
@@ -62,6 +64,7 @@ class Igra():
 
     def razveljavi(self):
         """Razveljavi potezo in se vrni v prejšnje stanje."""
+        self.stevilo_potez -= 1
         if len(self.zgodovina) == 0:
             return "Polje je prazno"
         (self.polje, self.na_potezi) = self.zgodovina.pop()
@@ -81,6 +84,7 @@ class Igra():
     def povleci_potezo(self, stolp):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
+        self.stevilo_potez += 1
         vrstica = self.prava_vrstica(stolp)
         if (vrstica == None) or (self.na_potezi == None):
             # neveljavna poteza
@@ -152,3 +156,4 @@ class Igra():
                 return (NI_KONEC, None)
         # Vsa polja so polna, rezultat je neodločen
         return (NEODLOCENO, None)
+

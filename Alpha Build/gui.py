@@ -1,8 +1,9 @@
+
+
 from igra import *
 from clovek import *
 from racunalnik import *
 import minimax
-
 import tkinter
 import argparse
 import logging
@@ -231,3 +232,4 @@ if __name__ == "__main__":
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
     root.mainloop()
+

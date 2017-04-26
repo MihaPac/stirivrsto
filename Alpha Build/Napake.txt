@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 Kaj je narobe:
+=======
+Kaj je narobe:
+>>>>>>> dc40ff954e4d8f6acfd80251d1c7dfbb873162ec
 Kolikor jaz vidim jih sploh nima.

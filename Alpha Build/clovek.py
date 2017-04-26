@@ -1,3 +1,4 @@
+
 ######################################################################
 ## Igralec človek
 
@@ -20,3 +21,4 @@ class Clovek():
     def klik(self, p):
         # Povlečemo potezo. Če ni veljavna, se ne bo zgodilo nič.
         self.gui.povleci_potezo(p)
+

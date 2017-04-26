@@ -60,3 +60,4 @@ class Racunalnik():
     def klik(self, p):
         # Računalnik ignorira klike
         pass
+
