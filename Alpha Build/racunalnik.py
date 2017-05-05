@@ -1,6 +1,6 @@
 import threading  # za vzporedno izvajanje
 
-from minimax import *
+from alfabeta import *
 
 ######################################################################
 ## Igralec računalnik

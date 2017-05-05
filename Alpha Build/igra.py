@@ -76,6 +76,7 @@ class Igra():
         return [stolp for stolp in range(7) if self.polje[stolp][5] is PRAZNO]
 
     def prava_vrstica(self, stolpec):
+        '''Vrne prvo vrstico, ki je neprazna v stolpcu. Šteje od spodaj navzgor.'''
         for vrstica in range(6):
             if self.polje[stolpec][vrstica] == PRAZNO:
                 return vrstica
@@ -103,6 +104,12 @@ class Igra():
                 # Igre je konec
                 self.na_potezi = None
             return (zmagovalec, trojka)
+
+    def stirka(self, vrstice, stolpci):
+        '''Prešteje vse možne štirke na igralni plošči in jih zapiše v
+        seznam.'''
+        #Vodoravne
+
 
     # Tabela vseh trojk, ki nastopajo v igralnem polju
     trojke = []

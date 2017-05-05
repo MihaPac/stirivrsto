@@ -3,7 +3,7 @@
 from igra import *
 from clovek import *
 from racunalnik import *
-import minimax
+import alfabeta
 import tkinter
 import argparse
 import logging
@@ -35,13 +35,13 @@ class Gui():
                                                               Clovek(self)))
         menu_igra.add_command(label="R=Človek, M=Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Minimax())))
+                                                              Racunalnik(self, Alfabeta())))
         menu_igra.add_command(label="R=Računalnik, M=Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax()),
+                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta()),
                                                               Clovek(self)))
         menu_igra.add_command(label="R=Računalnik, M=Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax()),
-                                                              Racunalnik(self, Minimax())))
+                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta()),
+                                                              Racunalnik(self, Alfabeta())))
 
 
         self.napis = tkinter.StringVar(master, value="Dobrodošli v 4 v vrsto!")
@@ -60,12 +60,14 @@ class Gui():
         self.canvas.bind("<Button-1>", self.canvas_klik)
 
         #Zacetek Igre
-        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax()))
+        self.zacni_igro(Clovek(self), Racunalnik(self, Alfabeta()))
 
 
 
 
     def zacni_igro(self, igralec_r, igralec_m):
+        '''Zbriše polje in začne novo igro z igralcema igralec_r in igralec_m,
+        ki sta ali računalnika ali človeka.'''
         self.prekini_igralce()
         # Pobrišemo vse figure s polja
         self.canvas.delete(Gui.TAG_FIGURA)
@@ -82,9 +84,6 @@ class Gui():
         if self.igralec_r: self.igralec_r.prekini()
         if self.igralec_m: self.igralec_m.prekini()
 
-    def nova_igra(self):
-        self.igra.nova_igra()
-
     def zapri_okno(self, master):
         self.prekini_igralce()
         master.destroy()
@@ -100,6 +99,7 @@ class Gui():
             self.canvas.create_line(0*d + 2, i*d + 2, 7*d + 2, i*d + 2, width = sirina, tag=Gui.TAG_OKVIR)
 
     def narisi_barvo(self, stolpec, vrstica, igralec):
+        '''Nariše krogec barve igralec v stolpec, vrstico igralnega polja.'''
         x = stolpec * Gui.VELIKOST_POLJA + 2# STOLPEC
         y = Gui.VELIKOST_POLJA * (5 - vrstica) + 2 # VRSTICA
         d1 = Gui.VELIKOST_POLJA // 10
@@ -113,6 +113,8 @@ class Gui():
 
 
     def narisi_zmago(self, barva, trojka):
+        '''Ko je zaželjeno število krogcev v eni vrsti se dodajo krogci druge barve
+        nad njimi, da je zmaga bolj vidna.'''
         for p in trojka:
             stolpec, vrstica = p
             x = stolpec * Gui.VELIKOST_POLJA + 2 # STOLPEC
@@ -122,6 +124,7 @@ class Gui():
             self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
 
     def canvas_klik(self, event):
+        '''Kliče človek.py ali računalnik.py, da povleče potezo znotraj gui.'''
         #print(event.x, event.y)
         stolpec = event.x // Gui.VELIKOST_POLJA
         if event.x > Gui.VELIKOST_POLJA * 7:
@@ -158,11 +161,9 @@ class Gui():
         else:
             self.konec(self.igra.stanje_igre())
 
-        #return
-
 
     def konec(self, pogoji):
-        '''Ali je konec igre?'''
+        '''Preveri konec igre.'''
         zmaga, trojka = pogoji
         if zmaga == NI_KONEC or zmaga == None:
             return
@@ -205,7 +206,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Igrica štiri v vrsto")
     # Argument --globina n, s privzeto vrednostjo MINIMAX_GLOBINA
     parser.add_argument('--globina',
-                        default=minimax.max_globina,
+                        default=alfabeta.max_globina,
                         type=int,
                         help='globina iskanja za minimax algoritem')
     # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
@@ -227,7 +228,7 @@ if __name__ == "__main__":
     # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
-    aplikacija = Gui(root, minimax.max_globina)
+    aplikacija = Gui(root, alfabeta.max_globina)
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
