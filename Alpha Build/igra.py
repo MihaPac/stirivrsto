@@ -3,6 +3,8 @@
 ######################################################################
 ## Igra
 
+import logging
+
 IGRALEC_M = 'M'
 IGRALEC_R = 'R'
 PRAZNO = '_'
@@ -42,15 +44,12 @@ class Igra():
         self.zgodovina = []
         self.stevilo_potez = 0
         self.seznam = self.stirke()
-
-    #def nova_igra(self):
-
+        
     def shrani_pozicijo(self):
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
            z metodo razveljavi."""
         p = [self.polje[i][:] for i in range(7)]
         self.zgodovina += [(p, self.na_potezi)]
-        #print("tole",self.zgodovina, "to je zgodovina")
 
     def kopija(self):
         """Vrni kopijo te igre, brez zgodovine."""
@@ -70,7 +69,6 @@ class Igra():
         if len(self.zgodovina) == 0:
             return "Polje je prazno"
         (self.polje, self.na_potezi) = self.zgodovina.pop()
-        #print(self.polje, " je polje")
         return self.polje
 
     def veljavne_poteze(self):
@@ -91,7 +89,7 @@ class Igra():
         vrstica = self.prava_vrstica(stolp)
         if (vrstica == None) or (self.na_potezi == None):
             # neveljavna poteza
-            print("neveljavna poteza")
+            logging.debug("igra: neveljavna poteza")
             return None
         else:
             self.shrani_pozicijo()
@@ -100,14 +98,13 @@ class Igra():
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 self.na_potezi = nasprotnik(self.na_potezi)
-                # print("menjal sem potezo")
             else:
                 # Igre je konec
                 self.na_potezi = None
             return (zmagovalec, stirka)
 
     def stirke(self, vrstice = 6, stolpci = 7):
-        '''PreĹˇteje vse moĹľne Ĺˇtirke na igralni ploĹˇÄŤi in jih zapiĹˇe v
+        '''Prešteje vse možne Ĺˇtirke na igralni ploĹˇÄŤi in jih zapiĹˇe v
         seznam.'''
         seznam = []
         #Vodoravne

@@ -1,4 +1,4 @@
-
+# -*- coding: utf8 -*-
 
 from igra import *
 from clovek import *
@@ -124,28 +124,24 @@ class Gui():
 
     def canvas_klik(self, event):
         '''Kliče človek.py ali računalnik.py, da povleče potezo znotraj gui.'''
-        #print(event.x, event.y)
         stolpec = event.x // Gui.VELIKOST_POLJA
         if event.x > Gui.VELIKOST_POLJA * 7:
             stolpec = 6
-        #print("Pozicija je" , stolpec, vrstica, "igralec je",
-        #      self.igra.na_potezi)
-        #zmaga = self.povleci_potezo((vrstica,stolpec))
-        #print("Zmaga je {}".format(zmaga))
+        logging.debug("gui: Pozicija klika je {0} stolpec, igralec je {1}".format(
+                                stolpec, self.igra.na_potezi))
         if self.igra.na_potezi == IGRALEC_M:
             self.igralec_m.klik(stolpec)
         elif self.igra.na_potezi == IGRALEC_R:
             self.igralec_r.klik(stolpec)
         else:
-            # Nihče ni na potezi, user pa klika
+            # Nihče ni na potezi, uporabnik pa klika
             pass
 
     def povleci_potezo(self, stolpec):
         vrstica = self.igra.prava_vrstica(stolpec)
         if vrstica == None:
-            print("Stolpec je poln!")
+            logging.debug("gui: Stolpec je poln!")
             return None
-        print("Igralec je ", self.igra.na_potezi)
         self.narisi_barvo(stolpec, vrstica, self.igra.na_potezi)
         self.igra.povleci_potezo(stolpec)
         igralec = ""
@@ -184,7 +180,6 @@ class Gui():
         polje = self.igra.razveljavi()
         if type(polje) != list:
             return
-        #print("Polje za razveljavo ", polje)
         for stolpec in range(7):
             for vrstica in range(6):
                 if polje[stolpec][vrstica] == IGRALEC_R:
@@ -195,7 +190,6 @@ class Gui():
             self.napis.set("Na potezi je rdeči.")
         elif self.igra.na_potezi == IGRALEC_M:
             self.napis.set("Na potezi je modri.")
-        #print("Narisalo se je")
 
 if __name__ == "__main__":
     # Iz ukazne vrstice poberemo globino za minimax, uporabimo
@@ -232,4 +226,5 @@ if __name__ == "__main__":
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
     root.mainloop()
+
 
