@@ -23,7 +23,6 @@ class Gui():
 
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
 
-
         menu = tkinter.Menu(master)
         master.config(menu = menu)
         #Menu za igro

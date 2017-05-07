@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 import logging
 import random
 from igra import IGRALEC_M, IGRALEC_R, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
@@ -9,10 +11,10 @@ max_globina = 5
 
             # Vrednosti igre
 ZMAGA = 1000000000 # Mora biti vsaj 10^9
-NESKONCNO = ZMAGA + 1 # Več kot zmaga
+NESKONCNO = ZMAGA + 1 # VeÄŤ kot zmaga
 
 def pomembnost(i):
-    "Vrni pomembnost poteze p. Manjše število pomeni, da je bolj pomemben."
+    "Vrni pomembnost poteze p. ManjĹˇe Ĺˇtevilo pomeni, da je bolj pomemben."
     return (i - 3) * (i - 3)
 
 class Alfabeta:
@@ -21,29 +23,29 @@ class Alfabeta:
     # v drugem vlaknu kot tkinter).
 
     def __init__(self, globina=max_globina):
-        self.globina = globina  # do katere globine iščemo?
-        self.prekinitev = False # ali moramo končati?
+        self.globina = globina  # do katere globine iĹˇÄŤemo?
+        self.prekinitev = False # ali moramo konÄŤati?
         self.igra = None # objekt, ki opisuje igro (ga dobimo kasneje)
         self.jaz = None  # katerega igralca igramo (podatek dobimo kasneje)
-        self.poteza = None # sem napišemo potezo, ko jo najdemo
-        self.vrednost = None # sem napišemo, kako dobra je ta poteza
+        self.poteza = None # sem napiĹˇemo potezo, ko jo najdemo
+        self.vrednost = None # sem napiĹˇemo, kako dobra je ta poteza
 
 
     def prekini(self):
-        """Metoda, ki jo pokliče GUI, če je treba nehati razmišljati, ker
+        """Metoda, ki jo pokliÄŤe GUI, ÄŤe je treba nehati razmiĹˇljati, ker
            je uporabnik zaprl okno ali izbral novo igro."""
         self.prekinitev = True
 
     def izracunaj_potezo(self, igra):
-        """Izračunaj potezo za trenutno stanje dane igre."""
-        # To metodo pokličemo iz vzporednega vlakna
+        """IzraÄŤunaj potezo za trenutno stanje dane igre."""
+        # To metodo pokliÄŤemo iz vzporednega vlakna
         assert (igra is not None)
         assert (igra.na_potezi is not None)
         self.igra = igra
-        self.prekinitev = False # Glavno vlakno bo to nastvilo na True, če moramo nehati
+        self.prekinitev = False # Glavno vlakno bo to nastvilo na True, ÄŤe moramo nehati
         self.jaz = self.igra.na_potezi
-        self.poteza = None # Sem napišemo potezo, ko jo najdemo
-        # Poženemo minimax
+        self.poteza = None # Sem napiĹˇemo potezo, ko jo najdemo
+        # PoĹľenemo minimax
         (poteza, vrednost) = self.alfabeta(self.globina, True)
         self.jaz = None
         self.igra = None
@@ -56,9 +58,9 @@ class Alfabeta:
 
 
     def vrednost_pozicije(self):
-        """Ocena vrednosti pozicije: sešteje vrednosti vseh trojk na plošči."""
+        """Ocena vrednosti pozicije: seĹˇteje vrednosti vseh trojk na ploĹˇÄŤi."""
         # Slovar, ki pove, koliko so vredne posamezne trojke, kjer "((x,y),p) : v" pomeni:
-        # če imamo v trojki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
+        # ÄŤe imamo v trojki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
         # potem je taka trojka za self.jaz vredna v.
         # Trojke, ki se ne pojavljajo v slovarju, so vredne 0.
         vrednost_trojke = {
@@ -91,7 +93,7 @@ class Alfabeta:
     def alfabeta(self, globina, maksimiziramo, alfa = -NESKONCNO, beta = NESKONCNO):
         """Glavna metoda minimax."""
         if self.prekinitev:
-            # Sporočili so nam, da moramo prekiniti
+            # SporoÄŤili so nam, da moramo prekiniti
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
             return (None, 0)
         (zmagovalec, lst) = self.igra.stanje_igre()
@@ -121,7 +123,7 @@ class Alfabeta:
                     #print(self.igra.veljavne_poteze())
                     for i in sorted(self.igra.veljavne_poteze(), key=pomembnost):
 
-                        #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEČTI POTEZO!!!!#######
+                        #######UPORABI PRAVO POLJE, DA BO VEDELO V KATERO VRSTICO POVLEÄŚTI POTEZO!!!!#######
                         self.igra.povleci_potezo(i)
                         v = self.alfabeta(globina-1, not maksimiziramo, alfa, beta)[1]
                         if (vrednost < v) or (vrednost == v and random.random() < 0.2):
@@ -148,7 +150,7 @@ class Alfabeta:
                         if beta <= alfa:
                             break
 
-                assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
+                assert (najboljsa_poteza is not None), "minimax: izraÄŤunana poteza je None"
                 return (najboljsa_poteza, vrednost)
         else:
             assert False, "minimax: nedefinirano stanje igre"
