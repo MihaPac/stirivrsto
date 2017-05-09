@@ -4,12 +4,12 @@ import logging
 import random
 from igra import IGRALEC_M, IGRALEC_R, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
-max_globina = 5
+max_globina = 7
 
 ######################################################################
-## Algoritem minimax
+## Algoritem alfabeta
 
-            # Vrednosti igre
+# Vrednosti igre
 ZMAGA = 1000000000 # Mora biti vsaj 10^9
 NESKONCNO = ZMAGA + 1 # Več kot zmaga
 
@@ -18,17 +18,20 @@ def pomembnost(i):
     return (i - 3) * (i - 3)
 
 class Alfabeta:
-    # Algoritem minimax predstavimo z objektom, ki hrani stanje igre in
+    # Algoritem alfabeta predstavimo z objektom, ki hrani stanje igre in
     # algoritma, nima pa dostopa do GUI (ker ga ne sme uporabljati, saj deluje
     # v drugem vlaknu kot tkinter).
 
-    def __init__(self, globina=max_globina):
+    def __init__(self, globina=max_globina, alkohol = False):
         self.globina = globina  # do katere globine iščemo?
         self.prekinitev = False # ali moramo končati?
         self.igra = None # objekt, ki opisuje igro (ga dobimo kasneje)
         self.jaz = None  # katerega igralca igramo (podatek dobimo kasneje)
         self.poteza = None # sem napišemo potezo, ko jo najdemo
         self.vrednost = None # sem napišemo, kako dobra je ta poteza
+        # v primeru, da izberemo pivski 4 v vrsto:
+        self.alkohol = alkohol # Če je računalnik nastavljen da bo delal napake
+        self.pijanost = 0 # Kako pogosto bo delal računalnik napake
 
 
     def prekini(self):
@@ -45,7 +48,7 @@ class Alfabeta:
         self.prekinitev = False # Glavno vlakno bo to nastvilo na True, če moramo nehati
         self.jaz = self.igra.na_potezi
         self.poteza = None # Sem napišemo potezo, ko jo najdemo
-        # Poženemo minimax
+        # Poženemo alfabeta
         (poteza, vrednost) = self.alfabeta(self.globina, True)
         self.jaz = None
         self.igra = None
@@ -88,15 +91,15 @@ class Alfabeta:
                 else:
                     assert (self.igra.polje[stolp][vrst] == PRAZNO)
             vrednost += vrednost_stirke.get((x,y), 0) - pomembnost * 10
-        return vrednost + self.igra.stevilo_potez
-
+        if self.alkohol == True and random.random() < 0.17:
+            self.pijanost += 0.2 
+        return vrednost + self.igra.stevilo_potez + self.pijanost * (10 ** (self.igra.stevilo_potez//2)) * random.choice([-1, 1])
+    
     def alfabeta(self, globina, maksimiziramo, alfa = -NESKONCNO, beta = NESKONCNO):
-        """Glavna metoda minimax."""
+        """Glavna metoda alfabeta."""
         if self.prekinitev:
-            # Sporoćili so nam, da moramo prekiniti
-            logging.debug ("Minimax prekinja, globina = {0}".format(globina))
-			#To debug sporočilo bi lahko boljše delovalo, trenutno pove globino od 0 do
-			#trenutne globine, če se prekine.
+            # Sporočili so nam, da moramo prekiniti
+            logging.debug ("Alfabeta prekinja, globina = {0}".format(globina))
             return (None, 0)
         (zmagovalec, lst) = self.igra.stanje_igre()
         if self.igra.polje[3][0] == PRAZNO:
@@ -117,7 +120,7 @@ class Alfabeta:
             if globina == 0:
                 return (None, self.vrednost_pozicije())
             else:
-                # Naredimo eno stopnjo minimax
+                # Naredimo eno stopnjo alfabeta
                 if maksimiziramo:
                     # Maksimiziramo
                     najboljsa_poteza = None

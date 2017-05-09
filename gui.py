@@ -14,55 +14,87 @@ class Gui():
 
     TAG_OKVIR = 'okvir'
 
-    VELIKOST_POLJA = 50
+    VELIKOST_POLJA = 75
+    
 
     def __init__(self, master, globina):
         self.igralec_m = None # Objekt, ki igra X (nastavimo ob začetku igre)
         self.igralec_r = None # Objekt, ki igra O (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
+        self.globina = 4
+        self.pijanost = False # Spremenljivka, ki pove, ali računalnik dela napake
 
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
 
         menu = tkinter.Menu(master)
         master.config(menu = menu)
+
         #Menu za igro
-        menu_igra = tkinter.Menu(menu)
+        menu_igra = tkinter.Menu(menu, tearoff=0)
+        menu_tezavnost = tkinter.Menu(menu, tearoff=0)
+        menu_napak = tkinter.Menu(menu, tearoff=0)
         menu.add_cascade(label = "Igra", menu = menu_igra)
+        menu.add_cascade(label = "Težavnost", menu = menu_tezavnost)
+        
+        #Težavnost, v bistvu samo nastavljanje globine
+        menu_tezavnost.add_checkbutton(label="Računalnik dela napake", command=lambda: self.izberi_pijanost())
+        menu_tezavnost.add("separator")
+        menu_tezavnost.add_radiobutton(label="Zelo lahka igra (Globina = 3)",
+                                   command=lambda: self.izberi_tezavnost(3))
+        menu_tezavnost.add_radiobutton(label="Lahka igra (Globina = 4)",
+                                   command=lambda: self.izberi_tezavnost(4))
+        menu_tezavnost.add_radiobutton(label="Normalna igra (Globina = 5)",
+                                   command=lambda: self.izberi_tezavnost(5))
+        menu_tezavnost.add_radiobutton(label="Težka igra (Globina = 6)",
+                                   command=lambda: self.izberi_tezavnost(6))
+        
         #Menu za izbiro igralcev
         menu_igra.add_command(label="R=Človek, M=Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Clovek(self)))
-        menu_igra.add_command(label="R=Človek, M=Računalnik",
-                              command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Alfabeta())))
+        menu_igra.add_command(label="R=Človek, M=Računalnik", 
+                             command=lambda: self.zacni_igro(Clovek(self),
+                                                              Racunalnik(self, Alfabeta(self.globina,
+                                                                                        self.pijanost))))
         menu_igra.add_command(label="R=Računalnik, M=Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta()),
+                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta(self.globina,
+                                                                                        self.pijanost)),
                                                               Clovek(self)))
         menu_igra.add_command(label="R=Računalnik, M=Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta()),
-                                                              Racunalnik(self, Alfabeta())))
+                              command=lambda: self.zacni_igro(Racunalnik(self, Alfabeta(self.globina,
+                                                                                        self.pijanost)),
+                                                              Racunalnik(self, Alfabeta(self.globina,
+                                                                                        self.pijanost))))
 
+        #Grafični elementi
+        master.configure(background="#acd")
+        self.napis = tkinter.StringVar(master, value="")
+        tkinter.Label(master, font = "Impact {}".format(Gui.VELIKOST_POLJA//2),
+                      width=35, textvariable=self.napis, background="#acd").grid(row=0, column=0)
 
-        self.napis = tkinter.StringVar(master, value="Dobrodošli v 4 v vrsto!")
-        #Ta napis se dejansko ne pokaže
-        tkinter.Label(master, textvariable=self.napis).grid(row=0, column=0)
-
-        self.canvas = tkinter.Canvas(master, width=7*Gui.VELIKOST_POLJA, height=6*Gui.VELIKOST_POLJA)
+        self.canvas = tkinter.Canvas(master, width=7*Gui.VELIKOST_POLJA, height=6*Gui.VELIKOST_POLJA,
+                                     background="#fff")
         self.canvas.grid(row = 1, column = 0)
-
+        
         self.b = tkinter.Button(master, text="Razveljavi", command = self.razveljavi)
         self.b.grid(row=2, column =0)
-
+        
         self.narisi_mrezo()
 
         #Kontrole
         self.canvas.bind("<Button-1>", self.canvas_klik)
 
         #Zacetek Igre
-        self.zacni_igro(Clovek(self), Racunalnik(self, Alfabeta()))
+        self.zacni_igro(Clovek(self), Racunalnik(self, Alfabeta(self.globina,
+                                                                self.pijanost)))
+    
+    def izberi_pijanost(self):
+        '''Nastavi pijanost na nasprotno vrednost, kot je bila prej.'''
+        self.pijanost = not self.pijanost
 
-
-
+    def izberi_tezavnost(self, globina):
+        '''Nastavi self.globina do vrednosti globina.'''
+        self.globina = globina
 
     def zacni_igro(self, igralec_r, igralec_m):
         '''Zbriše polje in začne novo igro z igralcema igralec_r in igralec_m,
@@ -88,7 +120,7 @@ class Gui():
         master.destroy()
 
     def narisi_mrezo(self):
-        '''Igralno polje.'''
+        '''Nariše igralno polje s 7 stolpci in 6 vrsticami.'''
         self.canvas.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
         sirina = 2
@@ -111,10 +143,10 @@ class Gui():
         self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
 
 
-    def narisi_zmago(self, barva, trojka):
-        '''Ko je zaželjeno število krogcev v eni vrsti se dodajo krogci druge barve
+    def narisi_zmago(self, barva, stirka):
+        '''Ko je zaželjeno število krogcev v eni vrsti, se dodajo krogci druge barve
         nad njimi, da je zmaga bolj vidna.'''
-        for p in trojka:
+        for p in stirka:
             stolpec, vrstica = p
             x = stolpec * Gui.VELIKOST_POLJA + 2 # STOLPEC
             y = (5 - vrstica) * Gui.VELIKOST_POLJA + 2 # VRSTICA
@@ -123,7 +155,7 @@ class Gui():
             self.canvas.create_oval(x + d1, y + d1, x + d2, y + d2, fill=barva, tag=Gui.TAG_FIGURA)
 
     def canvas_klik(self, event):
-        '''Kliče človek.py ali računalnik.py, da povleče potezo znotraj gui.'''
+        '''Kliče clovek.py ali racunalnik.py, da povleče potezo znotraj gui.'''
         stolpec = event.x // Gui.VELIKOST_POLJA
         if event.x > Gui.VELIKOST_POLJA * 7:
             stolpec = 6
@@ -138,6 +170,9 @@ class Gui():
             pass
 
     def povleci_potezo(self, stolpec):
+        '''Nariše krogec v pravilni poziciji z uporabo funkcije narisi_barvo.
+           Znotraj igre tudi povleče potezo in spremeni zapis nad igralni
+           poljem, da pove, kdo je na potezi'''
         vrstica = self.igra.prava_vrstica(stolpec)
         if vrstica == None:
             logging.debug("gui: Stolpec je poln!")
@@ -158,8 +193,8 @@ class Gui():
 
 
     def konec(self, pogoji):
-        '''Preveri konec igre.'''
-        zmaga, trojka = pogoji
+        '''Preveri, ali je konec igre.'''
+        zmaga, stirka = pogoji
         if zmaga == NI_KONEC or zmaga == None:
             return
         self.igra.na_potezi = None
@@ -167,15 +202,16 @@ class Gui():
         if zmaga == IGRALEC_R:
             zmagovalec = "rdeč"
             self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
-            self.narisi_zmago('red', trojka)
+            self.narisi_zmago('red', stirka)
         elif zmaga == IGRALEC_M:
             zmagovalec = "moder"
             self.napis.set("Igre je konec. Zmagal je {}!".format(zmagovalec))
-            self.narisi_zmago('blue', trojka)
+            self.narisi_zmago('blue', stirka)
         else:
             self.napis.set("Igre je konec. Nobeden ni zmagal!")
 
     def razveljavi(self):
+        '''Razveljavi zadnjo potezo.'''
         self.canvas.delete(Gui.TAG_FIGURA)
         polje = self.igra.razveljavi()
         if type(polje) != list:

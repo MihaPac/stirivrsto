@@ -35,12 +35,12 @@ class Racunalnik():
         self.gui.canvas.after(100, self.preveri_potezo)
 
     def preveri_potezo(self):
-        """Vsakih 100ms preveri, ali je algoritem Ĺľe izraÄŤunal potezo."""
+        """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
         if self.algoritem.poteza is not None:
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
             logging.debug("racunalnik: Računalnikova poteza je {0}, vredna {1}".format(self.algoritem.poteza, self.algoritem.vrednost))
             self.gui.povleci_potezo(self.algoritem.poteza)
-            # Vzporedno vlakno ni veÄŤ aktivno, zato ga "pozabimo"
+            # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
             self.mislec = None
         else:
             # Algoritem še ni našel poteze, preveri še enkrat čez 100ms
